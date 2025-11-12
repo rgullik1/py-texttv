@@ -7,10 +7,10 @@ from .page import render_page_no_bs, update_my_pages, search_pages, next_actual_
 
 term = Terminal()
 global latest_search
+global total_offset
 HELP  = "[<- ->] page -/+1   [g] goto   [q] quit   [s] search   [1-9] quick navigate"
 
 def _draw_scrollbar(*, scroll: int, total: int, viewport: int, top_y: int, bottom_y: int, x: int) -> None:
-    """Right-side vertical scrollbar with track and thumb."""
     track_len = max(0, bottom_y - top_y + 1)
     if track_len <= 0:
         return
@@ -22,7 +22,7 @@ def _draw_scrollbar(*, scroll: int, total: int, viewport: int, top_y: int, botto
     if total <= 0 or viewport <= 0 or total <= viewport:
         # full content fits; show a filled bar
         for y in range(top_y, bottom_y + 1):
-            print(term.move_yx(y, x) + "▯")
+            print(term.move_yx(y, x) + "▮")
         return
 
     # proportional thumb height (at least 1 row)
@@ -38,12 +38,13 @@ def _draw_scrollbar(*, scroll: int, total: int, viewport: int, top_y: int, botto
 
     thumb_bottom = min(bottom_y, thumb_top + thumb_height - 1)
 
-    # draw thumb (▮) over track
+    # draw thumb (▮)
     for y in range(thumb_top, thumb_bottom + 1):
         print(term.move_yx(y, x) + "▮")
 
-def draw(body: str, page_number: int, offset: int = 0) -> None:
+def draw(body: str, page_number: int, offset_inc: int = 0) -> None:
     # Clear
+    global total_offset
     print(term.home + term.clear)
     h, w = term.height, term.width
 
@@ -56,17 +57,22 @@ def draw(body: str, page_number: int, offset: int = 0) -> None:
           end="", flush=True)
 
     # body
+    total_offset = total_offset + offset_inc
     usable = max(0, h - 2)
     lines = body.splitlines()
+    max_offset = max(0, len(lines) - usable)
+    offset = max(0, min(total_offset, max_offset))
+    total_offset = offset
     for i in range(min(usable, len(lines))):
-        print(term.move_yx(2 + i, 0) + lines[i])
+        idx = i + offset
+        print(term.move_yx(2 + i, 0) + lines[idx])
 
     #fooder/pad
     print(term.move_yx(h - 1, 0) + term.reverse + " " * max(0, w - 1) + term.normal)
     print(term.move_yx(h - 1, 0) + term.reverse + HELP[: max(0, w - 1)] + term.normal, end="", flush=True)
+    _draw_scrollbar(scroll=offset, total=len(lines), viewport=usable, top_y=2, bottom_y=h-2, x=w-2)
 
 def prompt_number(prompt="Go to page: ") -> int:
-    """Simple line-editor at the bottom; returns the entered string (or '')."""
     h, w = term.height, term.width
     buf = []
     print(term.move_yx(h - 1, 0) + term.normal + " " * max(0, w - 1))
@@ -156,6 +162,8 @@ def search_keyword(current_page: int, prompt="Search Keyword: ") -> int | None:
 
 def main():
     current_page = 100
+    global total_offset
+    total_offset = 0
     update_my_pages(100, 101, 1)
     batch_is_fetched = False
     body = render_page_no_bs(current_page)
@@ -172,7 +180,6 @@ def main():
 
         update_my_pages(100, 300, 50)
         draw(body, current_page)
-        offset = 0
         while True:
             k = term.inkey()
             if not k:
@@ -185,14 +192,14 @@ def main():
 
             # navigation
             if k.name == "KEY_RIGHT":
-                offset = 0
+                total_offset = 0
                 current_page = next_actual_page(current_page)
                 body = render_page_no_bs(current_page)
                 draw(body, current_page)
                 continue
 
             if k.name == "KEY_LEFT":
-                offset = 0
+                total_offset = 0
                 current_page = actual_previous_page(current_page)
                 body = render_page_no_bs(current_page)
                 draw(body, current_page)
@@ -202,7 +209,7 @@ def main():
             if k.lower() == "g":
                 target = prompt_number()
                 # restore footer after prompt
-                offset = 0
+                total_offset = 0
                 draw(body, current_page)
                 if target:
                     current_page = target
@@ -213,7 +220,7 @@ def main():
             # goto
             if k.lower() == "s":
                 target = search_keyword(current_page = current_page)
-                offset = 0
+                total_offset = 0
                 draw(body, current_page)
                 if target:
                     current_page = int(target)
@@ -223,7 +230,7 @@ def main():
 
             # quick-nav
             if str(k).isdigit() and 1 <= int(str(k)) <= 9:
-                offset = 0
+                total_offset = 0
                 current_page = int(str(k)) * 100
                 body = render_page_no_bs(current_page)
                 draw(body, current_page)
@@ -231,12 +238,12 @@ def main():
 
             # scroll
             if k.name in ("KEY_DOWN",):
-                offset += 1
+                offset = +1
                 draw(body, current_page, offset)
                 continue
 
             if k.name in ("KEY_UP",):
-                offset -= 1
+                offset = -1
                 draw(body, current_page, offset)
                 continue
 
