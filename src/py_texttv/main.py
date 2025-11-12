@@ -55,27 +55,15 @@ def draw(body: str, page_number: int, offset: int = 0) -> None:
           + term.normal,
           end="", flush=True)
 
-    # split content
-    lines = body.splitlines()
-    total = len(lines)
-
-    usable = max(0, h - 3)  # header + footer
-
-    # adjust offset to valid range
-    max_offset = max(0, len(lines) - usable)
-    offset = min(offset, max_offset)
-    offset = max(offset, 0)
-
     # body
-    visible_lines = lines[offset : offset + usable]
-    for i, line in enumerate(visible_lines):
-        print(term.move_yx(2 + i, 0) + line[: w])
+    usable = max(0, h - 2)
+    lines = body.splitlines()
+    for i in range(min(usable, len(lines))):
+        print(term.move_yx(2 + i, 0) + lines[i])
 
     #fooder/pad
     print(term.move_yx(h - 1, 0) + term.reverse + " " * max(0, w - 1) + term.normal)
     print(term.move_yx(h - 1, 0) + term.reverse + HELP[: max(0, w - 1)] + term.normal, end="", flush=True)
-    # scrollbar
-    _draw_scrollbar(scroll=offset, total=total, viewport=usable, top_y=2, bottom_y=h-2, x=w-2)
 
 def prompt_number(prompt="Go to page: ") -> int:
     """Simple line-editor at the bottom; returns the entered string (or '')."""
