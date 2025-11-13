@@ -3,7 +3,14 @@ from __future__ import annotations
 from datetime import datetime
 
 from blessed import Terminal
-from .page import render_page_no_bs, update_my_pages, search_pages, next_actual_page, actual_previous_page
+
+from .page import (
+    actual_previous_page,
+    next_actual_page,
+    render_page_no_bs,
+    search_pages,
+    update_my_pages,
+)
 
 term = Terminal()
 global latest_search
@@ -98,6 +105,7 @@ def prompt_number(prompt="Go to page: ") -> int:
                 print(term.move_yx(h - 1, 0) + cur, end="", flush=True)
 
 import traceback
+
 
 def log_keypress(k):
     try:

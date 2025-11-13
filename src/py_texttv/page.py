@@ -1,9 +1,13 @@
+import html
+import re
 from typing import Optional, Tuple
-from colorama import init as colorama_init, Fore, Back
-import re, html
-from colorama import Style
+
+from colorama import Back, Fore, Style
+from colorama import init as colorama_init
 from pydantic import BaseModel, field_validator
+
 from .data_fetcher import populate_pages
+
 
 class Page(BaseModel):
     number: int
