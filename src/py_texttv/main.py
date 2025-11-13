@@ -25,11 +25,9 @@ def _draw_scrollbar(*, scroll: int, total: int, viewport: int, top_y: int, botto
             print(term.move_yx(y, x) + "▮")
         return
 
-    # proportional thumb height (at least 1 row)
+    # proportional thumb height
     thumb_height = max(1, round(track_len * (viewport / total)))
 
-    # proportional thumb position
-    # scroll in [0 .. total - viewport]
     max_scroll = total - viewport
     if max_scroll <= 0:
         thumb_top = top_y
@@ -58,7 +56,7 @@ def draw(body: str, page_number: int, offset_inc: int = 0) -> None:
 
     # body
     total_offset = total_offset + offset_inc
-    usable = max(0, h - 2)
+    usable = max(0, h - 3)
     lines = body.splitlines()
     max_offset = max(0, len(lines) - usable)
     offset = max(0, min(total_offset, max_offset))
@@ -143,7 +141,7 @@ def search_keyword(current_page: int, prompt="Search Keyword: ") -> int | None:
                 if not query:
                     return None
                 try:
-                    page = _search_keyword(query=query, start=current_page+1)   # <- returns an int (or maybe falsy)
+                    page = _search_keyword(query=query, start=current_page+1)
                 except Exception:
                     return None
                 return page or None
@@ -178,7 +176,7 @@ def main():
             flush=True,
         )
 
-        update_my_pages(100, 300, 50)
+        update_my_pages(100, 1000, 50)
         draw(body, current_page)
         while True:
             k = term.inkey()

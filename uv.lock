@@ -184,7 +184,7 @@ wheels = [
 
 [[package]]
 name = "py-texttv"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "blessed" },
@@ -192,7 +192,6 @@ dependencies = [
     { name = "pydantic" },
     { name = "requests" },
     { name = "rich" },
-    { name = "wcwidth" },
 ]
 
 [package.metadata]
@@ -202,7 +201,6 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.12.4" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "rich", specifier = ">=14.2.0" },
-    { name = "wcwidth", specifier = ">=0.2.14" },
 ]
 
 [[package]]
