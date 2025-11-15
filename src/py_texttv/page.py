@@ -62,7 +62,7 @@ MOSAIC_MAP = {
 
 
 def mosaic_char_from_id(n: Optional[int]) -> str:
-    return MOSAIC_MAP.get(n, " ")
+    return MOSAIC_MAP.get(n, " ") or " "
 
 def normalize_html(content):
     if isinstance(content, str):
@@ -217,7 +217,7 @@ def extract_line_blocks(raw_html: str):
         start = m.end()
         depth = 1
         i = start
-
+        mc = ""
         while depth and i < len(raw_html):
             mo = SPAN_OPEN_RE.search(raw_html, i)
             mc = SPAN_CLOSE_RE.search(raw_html, i)
@@ -285,7 +285,7 @@ def actual_previous_page(current_page):
         page_iter -= 1
     return page_iter
 
-def render_page_no_bs(page=100, app_id="py-texttv") -> str:
+def render_page_no_bs(page=100) -> str:
 
     try:
         raw = MyPages.pages[page].body

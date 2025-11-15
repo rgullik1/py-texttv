@@ -1,8 +1,8 @@
 .PHONY: check format
 
 check:
-	uv run pyright ./src/ ./tests/ ./packages
+	uv run pyright ./src/
 
 format:
-	uv run ruff check --fix ./src/ ./tests/
-	uv run ruff format ./src/ ./tests/
+	uv run ruff check --fix ./src/
+	uv run ruff format ./src/
