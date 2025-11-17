@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime
 import traceback
+from datetime import datetime
+
 from blessed import Terminal
 
 from .page import (
@@ -15,16 +16,19 @@ from .page import (
 term = Terminal()
 global latest_search
 global total_offset
-HELP  = "[<- ->] page -/+1   [g] goto   [q] quit   [s] search   [1-9] quick navigate"
+HELP = "[<- ->] page -/+1   [g] goto   [q] quit   [s] search   [1-9] quick navigate"
 
-def _draw_scrollbar(*, scroll: int, total: int, viewport: int, top_y: int, bottom_y: int, x: int) -> None:
+
+def _draw_scrollbar(
+    *, scroll: int, total: int, viewport: int, top_y: int, bottom_y: int, x: int
+) -> None:
     track_len = max(0, bottom_y - top_y + 1)
     if track_len <= 0:
         return
 
     # track
     for y in range(top_y, bottom_y + 1):
-        print(term.move_yx(y, x) + "▯")   # track glyph
+        print(term.move_yx(y, x) + "▯")  # track glyph
 
     if total <= 0 or viewport <= 0 or total <= viewport:
         # full content fits; show a filled bar
@@ -47,6 +51,7 @@ def _draw_scrollbar(*, scroll: int, total: int, viewport: int, top_y: int, botto
     for y in range(thumb_top, thumb_bottom + 1):
         print(term.move_yx(y, x) + "▮")
 
+
 def draw(body: str, page_number: int, offset_inc: int = 0) -> None:
     # Clear
     global total_offset
@@ -55,11 +60,14 @@ def draw(body: str, page_number: int, offset_inc: int = 0) -> None:
 
     # header
     header = f"SVT Text  —  {actual_previous_page(page_number)} ◀ {page_number} ▶ {next_actual_page(page_number)}"
-    print(term.move_yx(1, 0)
-          + term.bold_white_on_blue
-          + header.center(max(1, w)).rstrip().ljust(max(1, w))
-          + term.normal,
-          end="", flush=True)
+    print(
+        term.move_yx(1, 0)
+        + term.bold_white_on_blue
+        + header.center(max(1, w)).rstrip().ljust(max(1, w))
+        + term.normal,
+        end="",
+        flush=True,
+    )
 
     # body
     total_offset = total_offset + offset_inc
@@ -72,10 +80,17 @@ def draw(body: str, page_number: int, offset_inc: int = 0) -> None:
         idx = i + offset
         print(term.move_yx(2 + i, 0) + lines[idx])
 
-    #fooder/pad
+    # fooder/pad
     print(term.move_yx(h - 1, 0) + term.reverse + " " * max(0, w - 1) + term.normal)
-    print(term.move_yx(h - 1, 0) + term.reverse + HELP[: max(0, w - 1)] + term.normal, end="", flush=True)
-    _draw_scrollbar(scroll=offset, total=len(lines), viewport=usable, top_y=2, bottom_y=h-2, x=w-2)
+    print(
+        term.move_yx(h - 1, 0) + term.reverse + HELP[: max(0, w - 1)] + term.normal,
+        end="",
+        flush=True,
+    )
+    _draw_scrollbar(
+        scroll=offset, total=len(lines), viewport=usable, top_y=2, bottom_y=h - 2, x=w - 2
+    )
+
 
 def prompt_number(prompt="Go to page: ") -> int:
     h, w = term.height, term.width
@@ -107,7 +122,9 @@ def prompt_number(prompt="Go to page: ") -> int:
 
 def log_keypress(k):
     try:
-        with open(r"C:\Users\RGULLIK1\hobby_projects\py-texttv\keylog.txt", "a", encoding="utf-8") as f:
+        with open(
+            r"C:\Users\RGULLIK1\hobby_projects\py-texttv\keylog.txt", "a", encoding="utf-8"
+        ) as f:
             f.write(
                 f"{datetime.now():%H:%M:%S}  "
                 f"name={repr(k.name)}  "
@@ -116,9 +133,10 @@ def log_keypress(k):
                 f"seq={k.is_sequence}\n"
             )
     except Exception as e:
-        with open(r"C:\Users\RGULLIK1\hobby_projects\py-texttv\errorlog.txt", "a", encoding="utf-8") as ef:
+        with open(
+            r"C:\Users\RGULLIK1\hobby_projects\py-texttv\errorlog.txt", "a", encoding="utf-8"
+        ) as ef:
             ef.write(f"Logging failed: {e}\n{traceback.format_exc()}\n")
-
 
 
 def _search_keyword(query: str, start: int) -> int:
@@ -126,6 +144,7 @@ def _search_keyword(query: str, start: int) -> int:
     latest_search = query
     hits = search_pages(query, start) or []
     return hits[0]
+
 
 def search_keyword(current_page: int, prompt="Search Keyword: ") -> int | None:
     h, w = term.height, term.width
@@ -147,7 +166,7 @@ def search_keyword(current_page: int, prompt="Search Keyword: ") -> int | None:
                 if not query:
                     return None
                 try:
-                    page = _search_keyword(query=query, start=current_page+1)
+                    page = _search_keyword(query=query, start=current_page + 1)
                 except Exception:
                     return None
                 return page or None
@@ -162,7 +181,8 @@ def search_keyword(current_page: int, prompt="Search Keyword: ") -> int | None:
             # repaint the input line
             cur = prompt + "".join(buf)
             print(term.move_yx(h - 1, 0) + " " * max(0, w - 1), end="")
-            print(term.move_yx(h - 1, 0) + cur[:max(0, w - 1)], end="", flush=True)
+            print(term.move_yx(h - 1, 0) + cur[: max(0, w - 1)], end="", flush=True)
+
 
 def main():
     current_page = 100
@@ -189,7 +209,7 @@ def main():
                 continue
             log_keypress(k)
 
-            #quit
+            # quit
             if k.lower() == "q" or k.name == "KEY_ESCAPE":
                 break
 
@@ -222,7 +242,7 @@ def main():
 
             # goto
             if k.lower() == "s":
-                target = search_keyword(current_page = current_page)
+                target = search_keyword(current_page=current_page)
                 total_offset = 0
                 draw(body, current_page)
                 if target:
@@ -254,6 +274,7 @@ def main():
             if k.name == "KEY_RESIZE":
                 draw(body, current_page)
                 continue
+
 
 if __name__ == "__main__":
     main()

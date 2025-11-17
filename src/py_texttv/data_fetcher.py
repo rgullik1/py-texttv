@@ -6,6 +6,7 @@ class Page(BaseModel):
     number: int
     body: str
 
+
 class Pages(BaseModel):
     pages: dict[int, Page]
 
@@ -16,7 +17,6 @@ class Pages(BaseModel):
         if isinstance(v, list):
             return {p.number: p for p in v}
         raise TypeError("pages must be a dict or list of Page")
-
 
 
 def normalize_html(content):
@@ -35,6 +35,7 @@ def normalize_html(content):
         return "".join(parts)
     return str(content or "")
 
+
 def _normalize_html(data) -> str:
     page_info = data
 
@@ -46,6 +47,7 @@ def _normalize_html(data) -> str:
     html_content = normalize_html(content)
 
     return html_content
+
 
 def populate_pages(page_start=100, page_end=400, batch_size=50, app_id="py-texttv"):
     my_pages = Pages(pages={})
