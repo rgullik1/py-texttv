@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-
+import traceback
 from blessed import Terminal
 
 from .page import (
@@ -104,8 +104,6 @@ def prompt_number(prompt="Go to page: ") -> int:
                 cur = prompt + "".join(buf)
                 print(term.move_yx(h - 1, 0) + cur, end="", flush=True)
 
-import traceback
-
 
 def log_keypress(k):
     try:
@@ -171,7 +169,6 @@ def main():
     global total_offset
     total_offset = 0
     update_my_pages(100, 101, 1)
-    batch_is_fetched = False
     body = render_page_no_bs(current_page)
     with term.fullscreen(), term.hidden_cursor(), term.cbreak():
         draw(body, current_page)

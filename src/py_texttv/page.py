@@ -6,23 +6,8 @@ from colorama import Back, Fore, Style
 from colorama import init as colorama_init
 from pydantic import BaseModel, field_validator
 
-from .data_fetcher import populate_pages
+from .data_fetcher import populate_pages, Page, Pages
 
-
-class Page(BaseModel):
-    number: int
-    body: str
-
-class Pages(BaseModel):
-    pages: dict[int, Page]
-
-    @field_validator("pages", mode="after")
-    def ensure_dict(cls, v):
-        if isinstance(v, dict):
-            return v
-        if isinstance(v, list):
-            return {p.number: p for p in v}
-        raise TypeError("pages must be a dict or list of Page")
 
 MyPages = Pages(pages={})
 colorama_init(autoreset=False)
@@ -59,10 +44,9 @@ MOSAIC_MAP = {
     692512409: '*',
 }
 
-
-
 def mosaic_char_from_id(n: Optional[int]) -> str:
-    return MOSAIC_MAP.get(n, " ") or " "
+    key = n if n is not None else -1
+    return MOSAIC_MAP.get(key, " ") or " "
 
 def normalize_html(content):
     if isinstance(content, str):
@@ -206,7 +190,6 @@ def extract_line_blocks(raw_html: str):
         m = LINE_TAG_RE.search(raw_html, pos)
         if not m:
             break
-        open_tag = m.group(1)
         classes  = m.group(2) or ""
 
         class_list = classes.lower().split()
@@ -217,7 +200,8 @@ def extract_line_blocks(raw_html: str):
         start = m.end()
         depth = 1
         i = start
-        mc = ""
+        mc: Optional[re.Match[str]] = None  # <- explicitly tracked
+
         while depth and i < len(raw_html):
             mo = SPAN_OPEN_RE.search(raw_html, i)
             mc = SPAN_CLOSE_RE.search(raw_html, i)
@@ -229,7 +213,10 @@ def extract_line_blocks(raw_html: str):
             else:
                 depth -= 1
                 i = mc.end()
-        inner = raw_html[start:mc.start()] if depth == 0 else ""
+        if depth == 0 and mc is not None:
+            inner = raw_html[start : mc.start()]
+        else:
+            inner = ""
         yield inner
         pos = i
 
