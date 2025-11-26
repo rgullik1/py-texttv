@@ -8,7 +8,10 @@ permissions:
   contents: write
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-2022 ]
 
     steps:
       - uses: actions/checkout@v4
