@@ -1,0 +1,30 @@
+name: create_prerelease
+
+on:
+  push:
+    tags:
+      - 'v*-pre'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+
+      - name: Build distribution
+        run: uv build
+
+      - name: Create prerelease
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+          prerelease: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
